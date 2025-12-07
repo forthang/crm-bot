@@ -6,6 +6,7 @@ from src.config import config
 
 # Define the proxy
 proxy_url = "socks5://malexoff:DsNfV67K9J@82.152.233.24:50101"
+print(f"Using proxy: {proxy_url}")
 
 # Create an httpx client with the proxy
 http_client = httpx.AsyncClient(proxies=proxy_url)

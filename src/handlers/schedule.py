@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime, timedelta
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
@@ -32,30 +33,43 @@ async def generate_schedule_text(offset: int, lang: str = "en"):
     if not calls:
         text += t("schedule_empty", lang)
     else:
+        # Define timezones
+        msk_tz = pytz.timezone('Europe/Moscow')
+        paris_tz = pytz.timezone('Europe/Paris')
+        
         # Group by day
         current_day = ""
         for call in calls:
-            day_str = call.datetime.strftime("%d.%m (%a)")
+            # Ensure the datetime is timezone-aware (UTC)
+            utc_dt = call.datetime.replace(tzinfo=pytz.utc)
+            
+            day_str = utc_dt.astimezone(msk_tz).strftime("%d.%m (%a)")
             if day_str != current_day:
                 text += f"\n<b>🗓 {day_str}</b>\n"
                 current_day = day_str
             
             client = await get_client(call.client_id)
-            time_str = call.datetime.strftime("%H:%M")
+            
+            # Convert to respective timezones
+            time_msk = utc_dt.astimezone(msk_tz).strftime("%H:%M")
+            time_paris = utc_dt.astimezone(paris_tz).strftime("%H:%M")
+            
+            time_str = f"{time_msk} MSK ({time_paris} Paris)"
+            
             text += f" • <code>{time_str}</code>: {client.name} ({call.title})\n"
 
     return text
 
 @schedule_router.message(F.text.in_(all_t("btn_schedule")))
 async def show_schedule(message: Message):
-    lang, _ = await get_user_settings(message.from_user.id)
+    lang, _, _ = await get_user_settings(message.from_user.id)
     text = await generate_schedule_text(0, lang)
     await message.answer(text, reply_markup=get_schedule_kb(0, lang))
 
 
 @schedule_router.callback_query(F.data.startswith("sched_"))
 async def change_week(callback: CallbackQuery):
-    lang, _ = await get_user_settings(callback.from_user.id)
+    lang, _, _ = await get_user_settings(callback.from_user.id)
     offset = int(callback.data.split("_")[1])
     text = await generate_schedule_text(offset, lang)
     

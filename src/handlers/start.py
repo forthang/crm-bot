@@ -27,7 +27,7 @@ async def cmd_start(message: Message, state: FSMContext):
     
     if user:
         # If the user exists, get their language and show the menu
-        lang, _ = await get_user_settings(user.telegram_id)
+        lang, _, _ = await get_user_settings(user.telegram_id)
         await message.answer(
             t("welcome_back", lang, name=user.full_name),
             reply_markup=get_main_keyboard(lang)
