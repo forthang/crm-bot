@@ -1,9 +1,20 @@
 from openai import AsyncOpenAI
 import os
+import httpx
 
 from src.config import config
 
-client = AsyncOpenAI(api_key=config.OPENAI_API_KEY.get_secret_value())
+# Define the proxy
+proxy_url = "socks5://82.152.233.24:50101:malexoff:DsNfV67K9J"
+
+# Create an httpx client with the proxy
+http_client = httpx.AsyncClient(proxies=proxy_url)
+
+# Initialize the OpenAI client with the httpx client
+client = AsyncOpenAI(
+    api_key=config.OPENAI_API_KEY.get_secret_value(),
+    http_client=http_client
+)
 
 async def speech_to_text(file_path: str, language: str = "en") -> str:
     """
