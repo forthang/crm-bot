@@ -1,0 +1,32 @@
+services:
+  # Наш бот
+  bot:
+    build: .
+    container_name: crm_bot
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+    volumes:
+      - ./src:/app/src # Код прокидывается внутрь
+      - ./media:/app/media
+      - ./logs:/app/logs
+    command: watchfiles "python -m src.main" src
+
+  # База данных
+  db:
+    image: postgres:15-alpine
+    container_name: crm_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5435:5432' # Прокидываем порт наружу (на 5435), чтобы можно было зайти через DBeaver/PgAdmin
+
+volumes:
+  postgres_data:

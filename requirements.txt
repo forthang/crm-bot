@@ -1,0 +1,25 @@
+aiogram==3.10.0
+sqlalchemy==2.0.30
+asyncpg==0.29.0
+alembic==1.13.1
+apscheduler==3.10.4
+openai==1.35.0
+pandas==2.2.2
+openpyxl==3.1.2
+fpdf2==2.7.9
+ics==0.7.2
+pydantic-settings==2.3.0
+python-dotenv==1.0.1
+loguru==0.7.2
+watchfiles==0.21.0
+httpx==0.27.2 
+httpx-socks==0.9.1
+httpx[socks]
+SpeechRecognition==3.10.4
+pydub==0.25.1
+dateparser==1.2.0        # Понимает "завтра", "в понедельник"
+fuzzywuzzy==0.18.0       # Нечеткий поиск имен
+python-Levenshtein==0.25.1 # Ускоритель для поиска
+aiogram3-calendar==0.1.2
+dateparser==1.2.0
+pytz==2024.1
