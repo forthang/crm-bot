@@ -6,8 +6,8 @@ from src.database.requests import get_calls_in_range, get_client, get_user_setti
 
 schedule_router = Router()
 
-def get_schedule_kb(offset=0, lang: str = "ru"):
-    """Кнопки переключения недель. Offset = сдвиг в неделях (0 - текущая)"""
+def get_schedule_kb(offset=0, lang: str = "en"):
+    """Week navigation buttons. Offset = week shift (0 - current)."""
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text=t("btn_prev", lang), callback_data=f"sched_{offset-1}"),
@@ -15,24 +15,24 @@ def get_schedule_kb(offset=0, lang: str = "ru"):
         ]
     ])
 
-async def generate_schedule_text(offset: int, lang: str = "ru"):
-    # 1. Считаем даты
+async def generate_schedule_text(offset: int, lang: str = "en"):
+    # 1. Calculate dates
     today = datetime.now()
     start_of_week = today - timedelta(days=today.weekday()) + timedelta(weeks=offset)
     start_of_week = start_of_week.replace(hour=0, minute=0, second=0)
     end_of_week = start_of_week + timedelta(days=6, hours=23, minutes=59)
 
-    # 2. Берем данные
+    # 2. Get data
     calls = await get_calls_in_range(start_of_week, end_of_week)
 
-    # 3. Формируем текст
+    # 3. Format text
     period = f"{start_of_week.strftime('%d.%m')} - {end_of_week.strftime('%d.%m')}"
     text = t("schedule_title", lang, period=period)
 
     if not calls:
         text += t("schedule_empty", lang)
     else:
-        # Группируем по дням
+        # Group by day
         current_day = ""
         for call in calls:
             day_str = call.datetime.strftime("%d.%m (%a)")

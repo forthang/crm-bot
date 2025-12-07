@@ -1,18 +1,21 @@
 import os
 from datetime import datetime
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
-# Импорты БД
-from src.database.requests import create_call, get_client, get_user_settings
-# Импорты клавиатур
+# DB Imports
+from src.database.requests import create_call, get_client, get_user_settings, update_call_status, get_call, update_client_notes
+# Keyboard Imports
 from src.keyboards.clients_kb import get_client_card_kb
 from src.keyboards.calendar_kb import get_days_kb, get_hours_kb, get_minutes_kb
-# Импорт генератора ICS
+from src.keyboards.calls_kb import get_post_call_kb
+# ICS Generator Import
 from src.services.ics_generator import create_ics_file
-# Локализация
+# AI Service Import
+from src.services.ai_service import speech_to_text
+# Localization
 from src.locales import t
 
 calls_router = Router()
@@ -20,12 +23,15 @@ calls_router = Router()
 class AddCallState(StatesGroup):
     waiting_for_topic = State()
 
+class EditNotesState(StatesGroup):
+    waiting_for_notes = State()
+
 # ==========================================
-# 1. СТАРТ: Выбор дня
+# 1. START: Select Day
 # ==========================================
 @calls_router.callback_query(F.data.startswith("add_call_"))
 async def start_add_call(callback: CallbackQuery, state: FSMContext):
-    lang, _ = await get_user_settings(callback.from_user.id)
+    lang, _, _ = await get_user_settings(callback.from_user.id)
     client_id = int(callback.data.split("_")[2])
     await state.update_data(client_id=client_id)
     
@@ -36,11 +42,11 @@ async def start_add_call(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 # ==========================================
-# 2. ВЫБОР ЧАСА
+# 2. SELECT HOUR
 # ==========================================
 @calls_router.callback_query(F.data.startswith("date_"))
 async def pick_hour(callback: CallbackQuery):
-    lang, _ = await get_user_settings(callback.from_user.id)
+    lang, _, _ = await get_user_settings(callback.from_user.id)
     date_str = callback.data.split("_")[1]
     
     await callback.message.edit_text(
@@ -50,11 +56,11 @@ async def pick_hour(callback: CallbackQuery):
     await callback.answer()
 
 # ==========================================
-# 3. ВЫБОР МИНУТ
+# 3. SELECT MINUTES
 # ==========================================
 @calls_router.callback_query(F.data.startswith("time_"))
 async def pick_minutes(callback: CallbackQuery):
-    lang, _ = await get_user_settings(callback.from_user.id)
+    lang, _, _ = await get_user_settings(callback.from_user.id)
     parts = callback.data.split("_")
     date_str = parts[1]
     time_str = parts[2]
@@ -66,11 +72,11 @@ async def pick_minutes(callback: CallbackQuery):
     await callback.answer()
 
 # ==========================================
-# 4. ФИНАЛИЗАЦИЯ ВРЕМЕНИ -> ЗАПРОС ТЕМЫ
+# 4. FINALIZE TIME -> REQUEST TOPIC
 # ==========================================
 @calls_router.callback_query(F.data.startswith("conf_time_"))
 async def ask_topic(callback: CallbackQuery, state: FSMContext):
-    lang, _ = await get_user_settings(callback.from_user.id)
+    lang, _, _ = await get_user_settings(callback.from_user.id)
     parts = callback.data.split("_")
     date_str = parts[2]
     time_str = parts[3]
@@ -83,18 +89,18 @@ async def ask_topic(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
 # ==========================================
-# 5. СОХРАНЕНИЕ (ФИНАЛ)
+# 5. SAVE (FINAL)
 # ==========================================
 @calls_router.message(AddCallState.waiting_for_topic)
 async def finish_call_creation(message: Message, state: FSMContext):
     data = await state.get_data()
-    lang, tz = await get_user_settings(message.from_user.id)
+    lang, tz, _ = await get_user_settings(message.from_user.id)
     
     topic = message.text
     if not topic:
         topic = t("call_no_topic", lang)
 
-    # Сохраняем в БД
+    # Save to DB
     await create_call(
         client_id=data['client_id'],
         date_str=data['full_dt'],
@@ -104,15 +110,15 @@ async def finish_call_creation(message: Message, state: FSMContext):
     
     client = await get_client(data['client_id'])
     
-    # Генерируем ICS файл
+    # Generate ICS file
     dt_obj = datetime.strptime(data['full_dt'], "%d.%m.%Y %H:%M")
     ics_path = create_ics_file(
         title=f"📞 {client.name}",
-        description=f"Тема: {topic}\nТелефон: {client.phone or '---'}",
+        description=f"Topic: {topic}\nPhone: {client.phone or '---'}",
         start_time=dt_obj
     )
     
-    # Отправляем ответ
+    # Send response
     await message.answer(
         t("call_created", lang, date=data['full_dt'], tz=tz) + f"\n📌 {topic}",
         reply_markup=get_client_card_kb(client.id, lang)
@@ -124,8 +130,90 @@ async def finish_call_creation(message: Message, state: FSMContext):
         caption=t("ics_caption", lang)
     )
     
-    # Уборка
+    # Cleanup
     if os.path.exists(ics_path):
         os.remove(ics_path)
     
+    await state.clear()
+
+# ==========================================
+# 6. POST-CALL FOLLOW-UP
+# ==========================================
+@calls_router.callback_query(F.data.startswith("call_done_"))
+async def call_done(callback: CallbackQuery):
+    lang, _, _ = await get_user_settings(callback.from_user.id)
+    call_id = int(callback.data.split("_")[2])
+    
+    await update_call_status(call_id, "done")
+    
+    call = await get_call(call_id)
+    client = await get_client(call.client_id)
+    
+    await callback.message.edit_text(
+        t("call_follow_up", lang, client_name=client.name),
+        reply_markup=get_post_call_kb(client.id, lang)
+    )
+    await callback.answer(t("call_marked_done", lang))
+
+@calls_router.callback_query(F.data.startswith("call_cancel_"))
+async def call_cancel(callback: CallbackQuery):
+    lang, _, _ = await get_user_settings(callback.from_user.id)
+    call_id = int(callback.data.split("_")[2])
+    
+    await update_call_status(call_id, "cancel")
+    
+    await callback.message.edit_text(t("call_cancelled", lang))
+    await callback.answer()
+
+@calls_router.callback_query(F.data == "no_changes")
+async def no_changes(callback: CallbackQuery):
+    await callback.message.delete()
+    await callback.answer()
+
+@calls_router.callback_query(F.data.startswith("edit_notes_"))
+async def edit_notes(callback: CallbackQuery, state: FSMContext):
+    lang, _, _ = await get_user_settings(callback.from_user.id)
+    client_id = int(callback.data.split("_")[2])
+    
+    await state.update_data(client_id=client_id)
+    await callback.message.edit_text(t("edit_notes_prompt", lang))
+    await state.set_state(EditNotesState.waiting_for_notes)
+    await callback.answer()
+
+@calls_router.message(EditNotesState.waiting_for_notes)
+async def process_new_notes(message: Message, state: FSMContext, bot: Bot):
+    lang, _, _ = await get_user_settings(message.from_user.id)
+    data = await state.get_data()
+    note_text = ""
+
+    if message.voice:
+        status_msg = await message.answer(t("voice_processing", lang))
+        try:
+            file_id = message.voice.file_id
+            file = await bot.get_file(file_id)
+            
+            os.makedirs("media", exist_ok=True)
+            save_path = f"media/{file_id}.ogg"
+            
+            await bot.download_file(file.file_path, save_path)
+            
+            transcribed_text = await speech_to_text(save_path)
+            note_text = transcribed_text
+            
+            if os.path.exists(save_path):
+                os.remove(save_path)
+                
+            await status_msg.delete()
+        except Exception as e:
+            await status_msg.edit_text(t("voice_error", lang, error=e))
+            note_text = t("audio_error_placeholder", lang)
+    elif message.text:
+        note_text = message.text
+    else:
+        await message.answer(t("send_text_or_voice", lang))
+        return
+
+    await update_client_notes(data['client_id'], note_text)
+    
+    await message.answer(t("notes_updated", lang))
     await state.clear()

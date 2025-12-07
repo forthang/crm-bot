@@ -1,10 +1,10 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from src.locales import t
 
-def get_main_keyboard(lang: str = "ru"):
+def get_main_keyboard(lang: str = "en"):
     """
-    Главная клавиатура. 
-    Текст кнопок зависит от выбранного языка (lang).
+    Main keyboard.
+    The button text depends on the selected language (lang).
     """
     return ReplyKeyboardMarkup(
         keyboard=[
@@ -21,8 +21,8 @@ def get_main_keyboard(lang: str = "ru"):
         input_field_placeholder="Menu..."
     )
 
-def get_cancel_keyboard(lang: str = "ru"):
-    """Кнопка отмены"""
+def get_cancel_keyboard(lang: str = "en"):
+    """Cancel button"""
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text=t("btn_cancel", lang))]],
         resize_keyboard=True

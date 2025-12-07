@@ -2,16 +2,16 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from src.config import config
 from src.database.models import Base
 
-# Создаем асинхронный движок
+# Create an asynchronous engine
 engine = create_async_engine(
     url=config.database_url,
-    echo=False  # Поставь True, если хочешь видеть SQL запросы в консоли
+    echo=False  # Set to True to see SQL queries in the console
 )
 
-# Фабрика сессий (через нее будем делать запросы)
+# Session factory (for making queries)
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 async def create_tables():
-    """Создает таблицы в БД при запуске, если их нет"""
+    """Creates tables in the DB on startup if they don't exist"""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

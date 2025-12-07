@@ -1,5 +1,5 @@
 services:
-  # Наш бот
+  # Our bot
   bot:
     build: .
     container_name: crm_bot
@@ -9,12 +9,12 @@ services:
     depends_on:
       - db
     volumes:
-      - ./src:/app/src # Код прокидывается внутрь
+      - ./src:/app/src # Code is mounted inside
       - ./media:/app/media
       - ./logs:/app/logs
     command: watchfiles "python -m src.main" src
 
-  # База данных
+  # Database
   db:
     image: postgres:15-alpine
     container_name: crm_db
@@ -26,7 +26,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - '5435:5432' # Прокидываем порт наружу (на 5435), чтобы можно было зайти через DBeaver/PgAdmin
+      - '5435:5432' # Expose port to the outside (on 5435) for DBeaver/PgAdmin access
 
 volumes:
   postgres_data:

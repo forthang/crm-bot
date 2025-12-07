@@ -13,5 +13,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Команда для запуска с авто-перезагрузкой
+# Command to run with auto-reloading
 CMD ["watchfiles", "python -m src.main", "src"]

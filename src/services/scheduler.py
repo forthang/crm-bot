@@ -3,39 +3,40 @@ from aiogram import Bot
 from src.database.requests import get_calls_to_remind, mark_call_as_reminded, get_client, get_user_settings
 from src.locales import t
 from src.config import config
+from src.keyboards.calls_kb import get_reminder_kb
 
-# Создаем объект шедулера
+# Create a scheduler object
 scheduler = AsyncIOScheduler()
 
 async def check_reminders(bot: Bot):
-    """Эта функция запускается каждую минуту"""
-    calls = await get_calls_to_remind()
+    """This function is run every minute"""
+    # Assume we have one admin and send reminders to them
+    try:
+        admin_id = int(config.ADMIN_IDS.split(",")[0])
+    except (ValueError, IndexError):
+        print("❌ Error: ADMIN_IDS is not configured or has an invalid format.")
+        return
+
+    # Get the admin's settings once
+    lang, _, delay = await get_user_settings(admin_id)
+
+    calls = await get_calls_to_remind(minutes=delay)
     
     if not calls:
         return
 
-    # Предполагаем, что у нас один админ, и напоминания шлем ему
-    try:
-        admin_id = int(config.ADMIN_IDS.split(",")[0])
-    except (ValueError, IndexError):
-        print("❌ Ошибка: ADMIN_IDS не настроен или имеет неверный формат.")
-        return
-
-    # Получаем язык админа один раз
-    lang, _ = await get_user_settings(admin_id)
-
     for call in calls:
         client = await get_client(call.client_id)
         
-        # Формируем текст на языке админа
-        text = t("call_reminder", lang, client_name=client.name, topic=call.title)
+        # Format the text in the admin's language
+        text = t("call_reminder", lang, client_name=client.name, topic=call.title, minutes=delay)
         
         try:
-            await bot.send_message(chat_id=admin_id, text=text)
+            await bot.send_message(chat_id=admin_id, text=text, reply_markup=get_reminder_kb(call.id, lang))
             await mark_call_as_reminded(call.id)
-            print(f"✅ Отправлено напоминание для звонка {call.id} (язык: {lang})")
+            print(f"✅ Reminder sent for call {call.id} (language: {lang})")
         except Exception as e:
-            print(f"❌ Ошибка отправки напоминания для звонка {call.id}: {e}")
+            print(f"❌ Error sending reminder for call {call.id}: {e}")
 
 def start_scheduler(bot: Bot):
     scheduler.add_job(check_reminders, 'interval', minutes=1, kwargs={"bot": bot})

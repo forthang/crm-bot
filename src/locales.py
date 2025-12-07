@@ -1,89 +1,8 @@
-# Словарь переводов
+# Translation dictionary
 TRANSLATIONS = {
-    "ru": {
-        # --- Общие ---
-        "welcome_back": "👋 С возвращением, {name}!\nБот готов к работе.",
-        "action_cancelled": "Действие отменено.",
-        "id_error": "Ошибка ID",
-        "list_empty": "📂 Список пуст.",
-        "db_empty": "❌ База пуста.",
-        "generation_error": "❌ Ошибка генерации.",
-        "command_not_recognized": "Команда не распознана.",
-        "btn_back": "🔙 Назад",
-        "btn_cancel": "❌ Отмена",
-        "btn_today": "Сегодня",
-        "btn_tomorrow": "Завтра",
-        "btn_prev": "⬅️ Пред.",
-        "btn_next": "След. ➡️",
-
-        # --- Авторизация ---
-        "auth_required": "🔒 <b>Доступ ограничен.</b>\nПожалуйста, введите пароль администратора:",
-        "auth_success": "🔓 <b>Доступ разрешен!</b>\nДобро пожаловать в систему.",
-        "auth_failed": "⛔ <b>Неверный пароль.</b> Попробуйте еще раз:",
-
-        # --- Главное меню ---
-        "btn_clients": "👥 Клиенты",
-        "btn_add": "➕ Добавить",
-        "btn_schedule": "📅 Расписание",
-        "btn_settings": "⚙️ Настройки",
-
-        # --- Клиенты ---
-        "add_client_name": "📝 <b>Новый клиент.</b>\nВведите Имя:",
-        "enter_name_text": "Пожалуйста, введите имя текстом.",
-        "add_client_phone": "📞 Введите <b>Номер телефона</b> (или отправьте точку '.', если нет):",
-        "add_client_notes": "🗒 Напишите <b>Заметку</b> о клиенте.\n🎤 <i>Вы можете отправить голосовое сообщение, и я переведу его в текст!</i>",
-        "send_text_or_voice": "Пожалуйста, пришлите текст или голосовое.",
-        "client_created_success": "✅ <b>Клиент успешно создан!</b>\n👤 Имя: {name}\n📝 Заметка: {notes}",
-        "db_save_error": "❌ Ошибка при сохранении в БД: {error}",
-        "client_list_empty": "📂 Список клиентов пуст.",
-        "client_list_select": "📂 <b>Выберите клиента для просмотра:</b>",
-        "select_client": "📂 <b>Выберите клиента:</b>",
-        "client_not_found": "❌ Клиент не найден (возможно, удален).",
-        "client_card_template": "👤 <b>{name}</b>\n➖➖➖➖➖➖➖➖\n📱 Телефон: {phone}\n🏷 Теги: {tags}\n📝 <b>Заметка:</b>\n{notes}",
-        "client_deleted": "🗑 Клиент удален",
-        "btn_export_excel": "📉 Скачать всю базу (Excel)",
-        "generating_excel": "⏳ Генерирую Excel файл...",
-        "excel_caption": "📉 <b>Полная база клиентов</b>",
-        "btn_create_call": "📞 Создать созвон",
-        "btn_export_pdf": "📄 Скачать досье (PDF)",
-        "generating_pdf": "⏳ Генерирую PDF...",
-        "pdf_caption": "📄 <b>Досье клиента</b>",
-        "btn_delete": "🗑 Удалить",
-        "btn_back_to_list": "🔙 Назад к списку",
-
-        # --- Созвоны ---
-        "select_call_date": "📅 <b>Выберите дату созвона:</b>",
-        "select_call_hour": "📅 Дата: <b>{date}</b>\n🕓 Выберите час (по вашему времени):",
-        "select_call_minute": "📅 Дата: <b>{date}</b>\n🕓 Время: <b>{time}</b> (уточните минуты):",
-        "ask_call_topic": "✅ Выбрано время: <b>{dt}</b>\n\n📌 <b>Напишите тему созвона</b> (или отправьте голосовое):",
-        "call_no_topic": "Созвон (Без темы)",
-        "call_created": "✅ Созвон назначен на {date} ({tz})",
-        "ics_caption": "📅 <i>Нажмите на файл, чтобы добавить встречу в календарь телефона</i>",
-
-        # --- Расписание ---
-        "schedule_title": "📅 <b>Расписание ({period})</b>\n\n",
-        "schedule_empty": "🌴 На эту неделю планов нет.",
-        "call_reminder": "🔔 <b>НАПОМИНАНИЕ!</b>\nЧерез 10 минут созвон с клиентом: <b>{client_name}</b>\n📌 Тема: {topic}",
-
-        # --- Настройки ---
-        "settings_title": "⚙️ <b>Настройки</b>\nВаш язык: {lang}\nВаш пояс: {tz}",
-        "choose_lang": "Выберите язык / Choose language / Choisissez la langue:",
-        "lang_set": "✅ Язык изменен на Русский",
-        "choose_tz": "🌍 Выберите ваш часовой пояс:",
-        "tz_set": "✅ Часовой пояс установлен: {tz}",
-        "btn_change_lang": "🗣 Language / Язык",
-        "btn_change_tz": "🌍 Timezone / Часовой пояс",
-
-        # --- Голос ---
-        "voice_listen": "🎤 Слушаю ({lang})...",
-        "voice_processing": "🎧 Слушаю и расшифровываю...",
-        "voice_error": "⚠️ Ошибка обработки голоса: {error}",
-        "audio_error_placeholder": "[Ошибка аудио]",
-        "voice_recognized": "🗣: <i>{text}</i>",
-    },
     "en": {
         # --- Common ---
-        "welcome_back": "👋 Welcome back, {name}!\nThe bot is ready to work.",
+        "welcome_back": "👋 Welcome back, {name}!\n\nI'm ready to work. You can control me using the buttons or by sending voice commands (e.g., 'show clients', 'add new client').",
         "action_cancelled": "Action cancelled.",
         "id_error": "ID Error",
         "list_empty": "📂 The list is empty.",
@@ -99,7 +18,7 @@ TRANSLATIONS = {
 
         # --- Auth ---
         "auth_required": "🔒 <b>Access restricted.</b>\nPlease enter the administrator password:",
-        "auth_success": "🔓 <b>Access granted!</b>\nWelcome to the system.",
+        "auth_success": "🔓 <b>Access granted!</b>\nWelcome to the system.\n\nYou can control me using the buttons or by sending voice commands (e.g., 'show clients', 'add new client').",
         "auth_failed": "⛔ <b>Invalid password.</b> Please try again:",
 
         # --- Main Menu ---
@@ -118,9 +37,11 @@ TRANSLATIONS = {
         "db_save_error": "❌ Error saving to DB: {error}",
         "client_list_empty": "📂 Client list is empty.",
         "client_list_select": "📂 <b>Select a client to view:</b>",
+        "client_list_select_update": "📂 <b>Select a client to update:</b>",
+        "client_list_select_call": "📂 <b>Select a client to create a call for:</b>",
         "select_client": "📂 <b>Select a client:</b>",
         "client_not_found": "❌ Client not found (perhaps deleted).",
-        "client_card_template": "👤 <b>{name}</b>\n➖➖➖➖➖➖➖➖\n📱 Phone: {phone}\n🏷 Tags: {tags}\n📝 <b>Note:</b>\n{notes}",
+        "client_card_template": "👤 <b>{name}</b>\n➖➖➖➖➖➖➖➖\n📱 Phone: {phone}\n🏷 Status: {status}\n📝 <b>Note:</b>\n{notes}",
         "client_deleted": "🗑 Client deleted",
         "btn_export_excel": "📉 Download full database (Excel)",
         "generating_excel": "⏳ Generating Excel file...",
@@ -131,6 +52,10 @@ TRANSLATIONS = {
         "pdf_caption": "📄 <b>Client dossier</b>",
         "btn_delete": "🗑 Delete",
         "btn_back_to_list": "🔙 Back to list",
+        "btn_change_status": "🔄 Change Status",
+        "select_status": "Please select the new status for the client:",
+        "status_changed": "✅ Status for client {name} has been changed to {status}.",
+
 
         # --- Calls ---
         "select_call_date": "📅 <b>Select the call date:</b>",
@@ -140,20 +65,34 @@ TRANSLATIONS = {
         "call_no_topic": "Call (No topic)",
         "call_created": "✅ Call scheduled for {date} ({tz})",
         "ics_caption": "📅 <i>Click the file to add the meeting to your phone's calendar</i>",
+        "btn_mark_done": "✅ Mark as Done",
+        "btn_cancel_call": "❌ Cancel Call",
+        "btn_edit_notes": "📝 Edit Notes",
+        "btn_no_changes": "👍 No Changes",
+        "call_follow_up": "How did the call with {client_name} go? Any updates?",
+        "call_marked_done": "✅ Call marked as done.",
+        "call_cancelled": "❌ Call cancelled.",
+        "edit_notes_prompt": "Please send the new notes for the client (text or voice).",
+        "notes_updated": "✅ Client notes updated.",
 
         # --- Schedule ---
         "schedule_title": "📅 <b>Schedule ({period})</b>\n\n",
         "schedule_empty": "🌴 No plans for this week.",
-        "call_reminder": "🔔 <b>REMINDER!</b>\nIn 10 minutes, you have a call with: <b>{client_name}</b>\n📌 Topic: {topic}",
+        "call_reminder": "🔔 <b>REMINDER!</b>\nIn {minutes} minutes, you have a call with: <b>{client_name}</b>\n📌 Topic: {topic}",
 
         # --- Settings ---
-        "settings_title": "⚙️ <b>Settings</b>\nYour language: {lang}\nYour timezone: {tz}",
+        "settings_title": "⚙️ <b>Settings</b>\nYour language: {lang}\nYour timezone: {tz}\nReminder delay: {delay} minutes",
         "choose_lang": "Choose language:",
         "lang_set": "✅ Language set to English",
         "choose_tz": "🌍 Select your timezone:",
         "tz_set": "✅ Timezone set to: {tz}",
         "btn_change_lang": "🗣 Language",
         "btn_change_tz": "🌍 Timezone",
+        "btn_change_reminder": "⏰ Reminder Time",
+        "ask_reminder_time": "Please enter the new reminder time in minutes (e.g., 15):",
+        "reminder_time_set": "✅ Reminder time set to {minutes} minutes.",
+        "invalid_reminder_time": "❌ Invalid input. Please enter a number.",
+
 
         # --- Voice ---
         "voice_listen": "🎤 Listening ({lang})...",
@@ -164,7 +103,7 @@ TRANSLATIONS = {
     },
     "fr": {
         # --- Common ---
-        "welcome_back": "👋 Bon retour, {name}!\nLe bot est prêt.",
+        "welcome_back": "👋 Bon retour, {name}!\n\nJe suis prêt à travailler. Vous pouvez me contrôler via les boutons ou en envoyant des commandes vocales (par ex. 'afficher les clients', 'ajouter un nouveau client').",
         "action_cancelled": "Action annulée.",
         "id_error": "Erreur d'ID",
         "list_empty": "📂 La liste est vide.",
@@ -180,7 +119,7 @@ TRANSLATIONS = {
 
         # --- Auth ---
         "auth_required": "🔒 <b>Accès restreint.</b>\nVeuillez entrer le mot de passe administrateur :",
-        "auth_success": "🔓 <b>Accès autorisé !</b>\nBienvenue dans le système.",
+        "auth_success": "🔓 <b>Accès autorisé !</b>\nBienvenue dans le système.\n\nVous pouvez me contrôler via les boutons ou en envoyant des commandes vocales (par ex. 'afficher les clients', 'ajouter un nouveau client').",
         "auth_failed": "⛔ <b>Mot de passe incorrect.</b> Veuillez réessayer :",
 
         # --- Main Menu ---
@@ -199,9 +138,11 @@ TRANSLATIONS = {
         "db_save_error": "❌ Erreur lors de la sauvegarde en BDD : {error}",
         "client_list_empty": "📂 La liste de clients est vide.",
         "client_list_select": "📂 <b>Sélectionnez un client à afficher :</b>",
+        "client_list_select_update": "📂 <b>Sélectionnez un client à mettre à jour :</b>",
+        "client_list_select_call": "📂 <b>Sélectionnez un client pour créer un appel :</b>",
         "select_client": "📂 <b>Sélectionnez un client :</b>",
         "client_not_found": "❌ Client non trouvé (peut-être supprimé).",
-        "client_card_template": "👤 <b>{name}</b>\n➖➖➖➖➖➖➖➖\n📱 Téléphone : {phone}\n🏷 Tags : {tags}\n📝 <b>Note :</b>\n{notes}",
+        "client_card_template": "👤 <b>{name}</b>\n➖➖➖➖➖➖➖➖\n📱 Téléphone : {phone}\n🏷 Statut: {status}\n📝 <b>Note :</b>\n{notes}",
         "client_deleted": "🗑 Client supprimé",
         "btn_export_excel": "📉 Télécharger la base complète (Excel)",
         "generating_excel": "⏳ Génération du fichier Excel...",
@@ -212,6 +153,9 @@ TRANSLATIONS = {
         "pdf_caption": "📄 <b>Dossier client</b>",
         "btn_delete": "🗑 Supprimer",
         "btn_back_to_list": "🔙 Retour à la liste",
+        "btn_change_status": "🔄 Changer le statut",
+        "select_status": "Veuillez sélectionner le nouveau statut pour le client :",
+        "status_changed": "✅ Le statut du client {name} a été changé en {status}.",
 
         # --- Calls ---
         "select_call_date": "📅 <b>Sélectionnez la date de l'appel :</b>",
@@ -221,20 +165,33 @@ TRANSLATIONS = {
         "call_no_topic": "Appel (Sans sujet)",
         "call_created": "✅ Appel prévu pour {date} ({tz})",
         "ics_caption": "📅 <i>Cliquez sur le fichier pour ajouter la réunion à votre calendrier</i>",
+        "btn_mark_done": "✅ Marquer comme terminé",
+        "btn_cancel_call": "❌ Annuler l'appel",
+        "btn_edit_notes": "📝 Modifier les notes",
+        "btn_no_changes": "👍 Pas de changements",
+        "call_follow_up": "Comment s'est passé l'appel avec {client_name} ? Des mises à jour ?",
+        "call_marked_done": "✅ Appel marqué comme terminé.",
+        "call_cancelled": "❌ Appel annulé.",
+        "edit_notes_prompt": "Veuillez envoyer les nouvelles notes pour le client (texte ou vocal).",
+        "notes_updated": "✅ Notes du client mises à jour.",
 
         # --- Schedule ---
         "schedule_title": "📅 <b>Planning ({period})</b>\n\n",
         "schedule_empty": "🌴 Aucun plan pour cette semaine.",
-        "call_reminder": "🔔 <b>RAPPEL !</b>\nDans 10 minutes, appel avec : <b>{client_name}</b>\n📌 Sujet : {topic}",
+        "call_reminder": "🔔 <b>RAPPEL !</b>\nDans {minutes} minutes, appel avec : <b>{client_name}</b>\n📌 Sujet : {topic}",
 
         # --- Settings ---
-        "settings_title": "⚙️ <b>Paramètres</b>\nVotre langue : {lang}\nVotre fuseau horaire : {tz}",
+        "settings_title": "⚙️ <b>Paramètres</b>\nVotre langue : {lang}\nVotre fuseau horaire : {tz}\nDélai de rappel : {delay} minutes",
         "choose_lang": "Choisissez la langue :",
         "lang_set": "✅ Langue définie sur le Français",
         "choose_tz": "🌍 Choisissez votre fuseau horaire :",
         "tz_set": "✅ Fuseau horaire défini : {tz}",
         "btn_change_lang": "🗣 Langue",
         "btn_change_tz": "🌍 Fuseau horaire",
+        "btn_change_reminder": "⏰ Délai de rappel",
+        "ask_reminder_time": "Veuillez entrer le nouveau délai de rappel en minutes (par ex. 15) :",
+        "reminder_time_set": "✅ Délai de rappel défini à {minutes} minutes.",
+        "invalid_reminder_time": "❌ Entrée invalide. Veuillez entrer un nombre.",
 
         # --- Voice ---
         "voice_listen": "🎤 J'écoute ({lang})...",
@@ -245,22 +202,22 @@ TRANSLATIONS = {
     }
 }
 
-def t(key: str, lang: str = "ru", **kwargs) -> str:
-    """Функция получения перевода"""
-    # Получаем словарь для нужного языка, если его нет - используем 'ru' как запасной
-    lang_dict = TRANSLATIONS.get(lang, TRANSLATIONS["ru"])
+def t(key: str, lang: str = "en", **kwargs) -> str:
+    """Get a translation."""
+    # Get the dictionary for the desired language, falling back to 'en'
+    lang_dict = TRANSLATIONS.get(lang, TRANSLATIONS["en"])
     
-    # Получаем текст по ключу, если его нет - используем ключ как текст (для отладки)
+    # Get the text by key, using the key itself as a fallback for debugging
     text = lang_dict.get(key, key)
     
-    # Добавляем сам язык в переменные для форматирования, если он нужен в тексте
+    # Add the language itself to the formatting variables, if needed in the text
     kwargs['lang'] = lang
     
-    # Форматируем строку, заменяя плейсхолдеры {name} на значения
+    # Format the string, replacing placeholders like {name} with values
     return text.format(**kwargs)
 
 def all_t(key: str) -> list[str]:
-    """Возвращает список всех переводов для одного ключа."""
+    """Returns a list of all translations for a single key."""
     return [
         TRANSLATIONS[lang].get(key, key) 
         for lang in TRANSLATIONS
