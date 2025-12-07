@@ -3,6 +3,25 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from src.locales import t
 from src.database.enums import ClientStatus
 
+def get_client_menu_kb(lang: str = "en"):
+    builder = InlineKeyboardBuilder()
+    builder.button(text=t("btn_show_all", lang), callback_data="show_all_clients")
+    builder.button(text=t("btn_search_by_name", lang), callback_data="search_by_name")
+    builder.button(text=t("btn_filter_by_status", lang), callback_data="filter_by_status")
+    builder.adjust(1)
+    return builder.as_markup()
+
+def get_filter_by_status_kb(lang: str = "en"):
+    builder = InlineKeyboardBuilder()
+    for status in ClientStatus:
+        builder.button(
+            text=status.value.title(), 
+            callback_data=f"filter_status_{status.value}"
+        )
+    builder.adjust(2)
+    builder.row(InlineKeyboardButton(text=t("btn_back", lang), callback_data="client_menu"))
+    return builder.as_markup()
+
 def get_clients_list_kb(clients: list, lang: str = "en"):
     builder = InlineKeyboardBuilder()
     

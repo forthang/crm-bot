@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import pytz
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
@@ -112,6 +113,20 @@ async def finish_call_creation(message: Message, state: FSMContext):
     
     # Generate ICS file
     dt_obj = datetime.strptime(data['full_dt'], "%d.%m.%Y %H:%M")
+    
+    # Convert dt_obj (which is in user's timezone) to UTC first
+    user_tz = pytz.timezone(tz)
+    dt_obj_aware = user_tz.localize(dt_obj)
+    utc_dt = dt_obj_aware.astimezone(pytz.utc)
+
+    # Define timezones for display
+    msk_tz = pytz.timezone('Europe/Moscow')
+    paris_tz = pytz.timezone('Europe/Paris')
+
+    # Convert to respective timezones for display
+    msk_time_str = utc_dt.astimezone(msk_tz).strftime("%d.%m.%Y %H:%M")
+    paris_time_str = utc_dt.astimezone(paris_tz).strftime("%H:%M")
+
     ics_path = create_ics_file(
         title=f"📞 {client.name}",
         description=f"Topic: {topic}\nPhone: {client.phone or '---'}",
@@ -120,7 +135,7 @@ async def finish_call_creation(message: Message, state: FSMContext):
     
     # Send response
     await message.answer(
-        t("call_created", lang, date=data['full_dt'], tz=tz) + f"\n📌 {topic}",
+        t("call_created", lang, msk_time=msk_time_str, paris_time=paris_time_str) + f"\n📌 {topic}",
         reply_markup=get_client_card_kb(client.id, lang)
     )
     

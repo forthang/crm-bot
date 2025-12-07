@@ -16,6 +16,7 @@ from src.handlers.settings import settings_router    # Settings (Language, Timez
 from src.handlers.clients import client_router       # Clients (CRUD, List)
 from src.handlers.calls import calls_router          # Calls (Calendar, ICS)
 from src.handlers.schedule import schedule_router    # Schedule (Weeks)
+from src.handlers.stats import stats_router          # Statistics
 from src.handlers.voice_control import voice_router  # Global voice control
 
 async def main():
@@ -41,6 +42,7 @@ async def main():
     dp.include_router(client_router)    # Main client functionality
     dp.include_router(calls_router)     # Call creation
     dp.include_router(schedule_router)  # Schedule view
+    dp.include_router(stats_router)     # Statistics view
     
     # Global voice handler is last.
     # It catches voice messages if no FSM (form) is active.

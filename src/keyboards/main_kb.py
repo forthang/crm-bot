@@ -14,7 +14,8 @@ def get_main_keyboard(lang: str = "en"):
             ],
             [
                 KeyboardButton(text=t("btn_schedule", lang)),
-                KeyboardButton(text=t("btn_settings", lang))
+                KeyboardButton(text=t("btn_settings", lang)),
+                KeyboardButton(text=t("btn_stats", lang))
             ]
         ],
         resize_keyboard=True,
