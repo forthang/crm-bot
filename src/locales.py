@@ -123,8 +123,10 @@ TRANSLATIONS = {
         "voice_recognized": "🗣: <i>{text}</i>",
         "ai_thinking": "🤖 I understood: \"<i>{text}</i>\". Analyzing the command...",
         "ai_missing_data": "⚠️ I understood the command, but couldn't extract all the necessary information (like client name or date). Please try again.",
-        "ai_confirmation_prompt": "❓ <b>Confirm Action</b>\n\nI am about to do the following:\n\n- Create client: <b>{client_name}</b>\n- Schedule call: <b>{date}</b>\n- Topic: <i>{topic}</i>\n\nIs this correct?",
+        "ai_confirmation_prompt_new_client": "❓ <b>Confirm Action</b>\n\nCreate <b>new</b> client <b>{client_name}</b> and schedule a call for <b>{date}</b>?\n- Topic: <i>{topic}</i>",
+        "ai_confirmation_prompt_existing_client": "❓ <b>Confirm Action</b>\n\nSchedule a call for existing client <b>{client_name}</b> on <b>{date}</b>?\n- Topic: <i>{topic}</i>",
         "ai_client_and_call_created": "✅ Done! Created client <b>{client_name}</b> and scheduled a call for <b>{msk_time} MSK ({paris_time} Paris)</b>.\nTopic: {topic}.",
+        "ai_call_created_for_existing_client": "✅ Done! Scheduled a call for <b>{client_name}</b> for <b>{msk_time} MSK ({paris_time} Paris)</b>.\nTopic: {topic}.",
         "ai_execution_error": "❌ An error occurred while executing the command: {error}",
     },
     "fr": {
@@ -247,8 +249,10 @@ TRANSLATIONS = {
         "voice_recognized": "🗣: <i>{text}</i>",
         "ai_thinking": "🤖 J'ai compris : \"<i>{text}</i>\". Analyse de la commande...",
         "ai_missing_data": "⚠️ J'ai compris la commande, mais je n'ai pas pu extraire toutes les informations nécessaires (comme le nom du client ou la date). Veuillez réessayer.",
-        "ai_confirmation_prompt": "❓ <b>Confirmer l'action</b>\n\nJe vais effectuer les actions suivantes :\n\n- Créer le client : <b>{client_name}</b>\n- Planifier un appel : <b>{date}</b>\n- Sujet : <i>{topic}</i>\n\nEst-ce correct ?",
+        "ai_confirmation_prompt_new_client": "❓ <b>Confirmer l'action</b>\n\nCréer un <b>nouveau</b> client <b>{client_name}</b> et planifier un appel pour le <b>{date}</b> ?\n- Sujet : <i>{topic}</i>",
+        "ai_confirmation_prompt_existing_client": "❓ <b>Confirmer l'action</b>\n\nPlanifier un appel pour le client existant <b>{client_name}</b> le <b>{date}</b> ?\n- Sujet : <i>{topic}</i>",
         "ai_client_and_call_created": "✅ C'est fait ! Client <b>{client_name}</b> créé et un appel programmé pour le <b>{msk_time} MSK ({paris_time} Paris)</b>.\nSujet : {topic}.",
+        "ai_call_created_for_existing_client": "✅ C'est fait ! Appel programmé pour <b>{client_name}</b> le <b>{msk_time} MSK ({paris_time} Paris)</b>.\nSujet : {topic}.",
         "ai_execution_error": "❌ Une erreur est survenue lors de l'exécution de la commande : {error}",
     }
 }

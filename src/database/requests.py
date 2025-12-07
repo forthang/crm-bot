@@ -1,6 +1,7 @@
 from sqlalchemy import select, and_, update, func
 from src.database.core import async_session
 from src.database.models import User, Client, Call, History
+from src.database.enums import ClientStatus
 from datetime import datetime, timedelta
 import pytz
 
@@ -80,6 +81,14 @@ async def get_clients_by_status(status: str):
             .order_by(Client.name)
         )
         return result.all()
+
+async def find_client_by_exact_name(name: str):
+    """Finds a single client by case-insensitive exact name match."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(Client).where(func.lower(Client.name) == func.lower(name))
+        )
+        return result.scalar_one_or_none()
     
 async def get_client(client_id: int):
     """Returns full information about a client by ID."""
@@ -99,13 +108,14 @@ async def update_client_status(client_id: int, status: str):
     async with async_session() as session:
         client = await session.get(Client, client_id)
         if client:
-            old_status = client.status
-            if old_status != status:
-                client.status = status
+            old_status_val = client.status.value if isinstance(client.status, ClientStatus) else client.status
+            
+            if old_status_val != status:
+                client.status = ClientStatus(status) # Assign the enum member
                 history_log = History(
                     client_id=client_id,
                     action_type="status_change",
-                    text=f"{old_status.value} -> {status}"
+                    text=f"{old_status_val} -> {status}"
                 )
                 session.add(history_log)
                 await session.commit()

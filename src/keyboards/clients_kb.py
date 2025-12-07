@@ -41,6 +41,7 @@ def get_client_card_kb(client_id: int, lang: str = "en"):
     
     builder.button(text=t("btn_create_call", lang), callback_data=f"add_call_{client_id}")
     builder.button(text=t("btn_change_status", lang), callback_data=f"change_status_{client_id}")
+    builder.button(text=t("btn_edit_notes", lang), callback_data=f"edit_notes_{client_id}")
     builder.button(text=t("btn_export_pdf", lang), callback_data=f"export_pdf_{client_id}")
     builder.button(text=t("btn_delete", lang), callback_data=f"delete_client_{client_id}")
     builder.button(text=t("btn_back_to_list", lang), callback_data="back_to_list")

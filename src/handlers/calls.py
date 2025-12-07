@@ -38,7 +38,7 @@ async def start_add_call(callback: CallbackQuery, state: FSMContext):
     
     await callback.message.edit_text(
         t("select_call_date", lang),
-        reply_markup=get_days_kb(lang)
+        reply_markup=get_days_kb(client_id, lang)
     )
     await callback.answer()
 
@@ -48,11 +48,13 @@ async def start_add_call(callback: CallbackQuery, state: FSMContext):
 @calls_router.callback_query(F.data.startswith("date_"))
 async def pick_hour(callback: CallbackQuery):
     lang, _, _ = await get_user_settings(callback.from_user.id)
-    date_str = callback.data.split("_")[1]
+    parts = callback.data.split("_")
+    date_str = parts[1]
+    client_id = int(parts[2])
     
     await callback.message.edit_text(
         t("select_call_hour", lang, date=date_str),
-        reply_markup=get_hours_kb(date_str, lang)
+        reply_markup=get_hours_kb(date_str, client_id, lang)
     )
     await callback.answer()
 
@@ -65,10 +67,11 @@ async def pick_minutes(callback: CallbackQuery):
     parts = callback.data.split("_")
     date_str = parts[1]
     time_str = parts[2]
+    client_id = int(parts[3])
     
     await callback.message.edit_text(
         t("select_call_minute", lang, date=date_str, time=time_str),
-        reply_markup=get_minutes_kb(date_str, time_str, lang)
+        reply_markup=get_minutes_kb(date_str, time_str, client_id, lang)
     )
     await callback.answer()
 
@@ -81,9 +84,10 @@ async def ask_topic(callback: CallbackQuery, state: FSMContext):
     parts = callback.data.split("_")
     date_str = parts[2]
     time_str = parts[3]
+    client_id = int(parts[4])
     
     full_dt = f"{date_str} {time_str}"
-    await state.update_data(full_dt=full_dt)
+    await state.update_data(full_dt=full_dt, client_id=client_id)
     
     await callback.message.edit_text(t("ask_call_topic", lang, dt=full_dt))
     await state.set_state(AddCallState.waiting_for_topic)

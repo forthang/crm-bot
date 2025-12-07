@@ -8,9 +8,9 @@ from datetime import datetime
 
 # Import AI service
 from src.services.ai_service import speech_to_text, get_intent_and_entities
-from src.database.requests import get_user_settings, get_all_clients, create_client, create_call
+from src.database.requests import get_user_settings, get_all_clients, create_client, create_call, find_client_by_exact_name
 # Import functions to be called
-from src.handlers.clients import show_clients_list, start_add_client, select_client_to_create_call
+from src.handlers.clients import show_clients_menu, start_add_client, select_client_to_create_call
 from src.handlers.schedule import show_schedule
 from src.keyboards.clients_kb import get_clients_list_kb
 from src.keyboards.main_kb import get_main_keyboard
@@ -78,29 +78,40 @@ async def global_voice_handler(message: Message, state: FSMContext, bot: Bot):
             await message.answer(t("ai_missing_data", lang))
             return
         
-        # Store data in FSM and ask for confirmation
-        await state.update_data(
-            client_name=client_name,
-            call_datetime_str=call_datetime_str,
-            call_topic=call_topic,
-            user_timezone=tz,
-            original_text=text
-        )
+        # Check if client already exists
+        existing_client = await find_client_by_exact_name(client_name)
+        
+        fsm_data = {
+            "client_name": client_name,
+            "call_datetime_str": call_datetime_str,
+            "call_topic": call_topic,
+            "user_timezone": tz,
+            "original_text": text,
+            "is_new_client": existing_client is None,
+            "client_id": existing_client.id if existing_client else None
+        }
+        
+        await state.update_data(**fsm_data)
         await state.set_state(VoiceConfirmation.waiting_for_confirmation)
         
         # Format datetime for confirmation message
         dt_obj = datetime.strptime(call_datetime_str, "%Y-%m-%d %H:%M")
         confirmation_date = dt_obj.strftime("%d.%m.%Y %H:%M")
         
+        if existing_client:
+            prompt_key = "ai_confirmation_prompt_existing_client"
+        else:
+            prompt_key = "ai_confirmation_prompt_new_client"
+            
         await message.answer(
-            t("ai_confirmation_prompt", lang, client_name=client_name, date=confirmation_date, topic=call_topic),
+            t(prompt_key, lang, client_name=client_name, date=confirmation_date, topic=call_topic),
             reply_markup=get_voice_confirmation_kb(lang)
         )
 
     elif intent == "simple_command":
         command = entities.get("command", "").lower()
         if command in ["clients", "list", "database"]:
-            await show_clients_list(message)
+            await show_clients_menu(message)
         elif command in ["add", "create", "new"]:
             await start_add_client(message, state)
         elif command in ["schedule", "plan", "calendar"]:
@@ -123,11 +134,14 @@ async def confirm_voice_action(callback: CallbackQuery, state: FSMContext):
     await callback.message.edit_text(t("processing_request", lang))
 
     try:
-        client_id = await create_client(
-            name=data['client_name'], 
-            phone=None, 
-            notes=f"Created from voice command: '{data['original_text']}'"
-        )
+        client_id = data.get("client_id")
+        
+        if data.get("is_new_client"):
+            client_id = await create_client(
+                name=data['client_name'], 
+                phone=None, 
+                notes=f"Created from voice command: '{data['original_text']}'"
+            )
         
         dt_obj = datetime.strptime(data['call_datetime_str'], "%Y-%m-%d %H:%M")
         date_for_db = dt_obj.strftime("%d.%m.%Y %H:%M")
@@ -147,8 +161,13 @@ async def confirm_voice_action(callback: CallbackQuery, state: FSMContext):
         msk_time_str = aware_dt.astimezone(msk_tz).strftime("%d.%m.%Y %H:%M")
         paris_time_str = aware_dt.astimezone(paris_tz).strftime("%H:%M")
 
+        if data.get("is_new_client"):
+            success_key = "ai_client_and_call_created"
+        else:
+            success_key = "ai_call_created_for_existing_client"
+
         await callback.message.answer(
-            t("ai_client_and_call_created", lang, 
+            t(success_key, lang, 
               client_name=data['client_name'], 
               msk_time=msk_time_str, 
               paris_time=paris_time_str,
