@@ -97,7 +97,7 @@ TRANSLATIONS = {
         "daily_summary_title": "📅 <b>Daily Summary</b>",
         "todays_calls_title": "Calls for Today:",
         "overdue_calls_title": "🔥 Overdue Calls:",
-        "call_reminder": "🔔 <b>REMINDER!</b>\nIn {minutes} minutes, you have a call with: <b>{client_name}</b>\n📌 Topic: {topic}",
+        "call_reminder": "🔔 <b>REMINDER!</b>\nIn {minutes} minutes, you have a call with: <b>{client_name}</b>\n📞 Phone: {client_phone}\n📌 Topic: {topic}",
 
         # --- Settings ---
         "settings_title": "⚙️ <b>Settings</b>\nYour language: {lang}\nYour timezone: {tz}\nReminder delay: {delay} minutes",

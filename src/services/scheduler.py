@@ -29,7 +29,7 @@ async def check_reminders(bot: Bot):
         client = await get_client(call.client_id)
         
         # Format the text in the admin's language
-        text = t("call_reminder", lang, client_name=client.name, topic=call.title, minutes=delay)
+        text = t("call_reminder", lang, client_name=client.name, client_phone=client.phone or '---', topic=call.title, minutes=delay)
         
         try:
             await bot.send_message(chat_id=admin_id, text=text, reply_markup=get_reminder_kb(call.id, lang))
