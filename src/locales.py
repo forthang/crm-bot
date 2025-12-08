@@ -63,8 +63,11 @@ TRANSLATIONS = {
         "btn_delete": "🗑 Delete",
         "btn_back_to_list": "🔙 Back to list",
         "btn_change_status": "🔄 Change Status",
+        "btn_history": "📜 History",
         "select_status": "Please select the new status for the client:",
         "status_changed": "✅ Status for client {name} has been changed to {status}.",
+        "client_history_title": "📜 Client History: {name}",
+        "no_history": "No history yet.",
 
 
         # --- Calls ---
@@ -84,10 +87,16 @@ TRANSLATIONS = {
         "call_cancelled": "❌ Call cancelled.",
         "edit_notes_prompt": "Please send the new notes for the client (text or voice).",
         "notes_updated": "✅ Client notes updated.",
+        "btn_add_call_summary": "✍️ Add Call Summary",
+        "add_call_summary_prompt": "Please send a summary for the call with {client_name} (text or voice).",
+        "call_summary_added": "✅ Call summary added.",
 
         # --- Schedule ---
         "schedule_title": "📅 <b>Schedule ({period})</b>\n\n",
         "schedule_empty": "🌴 No plans for this week.",
+        "daily_summary_title": "📅 <b>Daily Summary</b>",
+        "todays_calls_title": "Calls for Today:",
+        "overdue_calls_title": "🔥 Overdue Calls:",
         "call_reminder": "🔔 <b>REMINDER!</b>\nIn {minutes} minutes, you have a call with: <b>{client_name}</b>\n📌 Topic: {topic}",
 
         # --- Settings ---
@@ -192,8 +201,11 @@ TRANSLATIONS = {
         "btn_delete": "🗑 Supprimer",
         "btn_back_to_list": "🔙 Retour à la liste",
         "btn_change_status": "🔄 Changer le statut",
+        "btn_history": "📜 Historique",
         "select_status": "Veuillez sélectionner le nouveau statut pour le client :",
         "status_changed": "✅ Le statut du client {name} a été changé en {status}.",
+        "client_history_title": "📜 Historique du client : {name}",
+        "no_history": "Aucun historique pour le moment.",
 
         # --- Calls ---
         "select_call_date": "📅 <b>Sélectionnez la date de l'appel :</b>",
@@ -212,10 +224,16 @@ TRANSLATIONS = {
         "call_cancelled": "❌ Appel annulé.",
         "edit_notes_prompt": "Veuillez envoyer les nouvelles notes pour le client (texte ou vocal).",
         "notes_updated": "✅ Notes du client mises à jour.",
+        "btn_add_call_summary": "✍️ Ajouter un résumé",
+        "add_call_summary_prompt": "Veuillez envoyer un résumé pour l'appel avec {client_name} (texte ou vocal).",
+        "call_summary_added": "✅ Résumé de l'appel ajouté.",
 
         # --- Schedule ---
         "schedule_title": "📅 <b>Planning ({period})</b>\n\n",
         "schedule_empty": "🌴 Aucun plan pour cette semaine.",
+        "daily_summary_title": "📅 <b>Résumé du jour</b>",
+        "todays_calls_title": "Appels du jour :",
+        "overdue_calls_title": "🔥 Appels en retard :",
         "call_reminder": "🔔 <b>RAPPEL !</b>\nDans {minutes} minutes, appel avec : <b>{client_name}</b>\n📌 Sujet : {topic}",
 
         # --- Settings ---

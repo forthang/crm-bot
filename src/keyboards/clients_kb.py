@@ -2,6 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from src.locales import t
 from src.database.enums import ClientStatus
+from src.keyboards.pagination_kb import get_pagination_kb
 
 def get_client_menu_kb(lang: str = "en"):
     builder = InlineKeyboardBuilder()
@@ -22,7 +23,7 @@ def get_filter_by_status_kb(lang: str = "en"):
     builder.row(InlineKeyboardButton(text=t("btn_back", lang), callback_data="client_menu"))
     return builder.as_markup()
 
-def get_clients_list_kb(clients: list, lang: str = "en"):
+def get_clients_list_kb(clients: list, page: int, total_pages: int, lang: str = "en"):
     builder = InlineKeyboardBuilder()
     
     # List of clients
@@ -31,8 +32,34 @@ def get_clients_list_kb(clients: list, lang: str = "en"):
     
     builder.adjust(1)
     
+    # Pagination
+    pagination_builder = get_pagination_kb(
+        current_page=page,
+        total_pages=total_pages,
+        callback_prefix="show_all_clients_page",
+        lang=lang
+    )
+    builder.row(*pagination_builder.buttons)
+
     # Export button
     builder.row(InlineKeyboardButton(text=t("btn_export_excel", lang), callback_data="export_all_excel"))
+    
+    return builder.as_markup()
+
+def get_client_history_kb(client_id: int, page: int, total_pages: int, lang: str = "en"):
+    builder = InlineKeyboardBuilder()
+
+    # Pagination
+    pagination_builder = get_pagination_kb(
+        current_page=page,
+        total_pages=total_pages,
+        callback_prefix=f"client_history_{client_id}_page",
+        lang=lang
+    )
+    builder.row(*pagination_builder.buttons)
+
+    # Back button
+    builder.row(InlineKeyboardButton(text=t("btn_back", lang), callback_data=f"client_{client_id}"))
     
     return builder.as_markup()
 
@@ -40,6 +67,7 @@ def get_client_card_kb(client_id: int, lang: str = "en"):
     builder = InlineKeyboardBuilder()
     
     builder.button(text=t("btn_create_call", lang), callback_data=f"add_call_{client_id}")
+    builder.button(text=t("btn_history", lang), callback_data=f"client_history_{client_id}")
     builder.button(text=t("btn_change_status", lang), callback_data=f"change_status_{client_id}")
     builder.button(text=t("btn_edit_notes", lang), callback_data=f"edit_notes_{client_id}")
     builder.button(text=t("btn_export_pdf", lang), callback_data=f"export_pdf_{client_id}")

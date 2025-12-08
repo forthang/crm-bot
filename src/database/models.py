@@ -59,6 +59,20 @@ class Call(Base):
     reminder_sent: Mapped[bool] = mapped_column(Boolean, default=False) # Has a reminder been sent?
 
     client = relationship("Client", back_populates="calls")
+    notes = relationship("CallNote", back_populates="call", cascade="all, delete-orphan")
+
+# --- Call Notes Table ---
+class CallNote(Base):
+    __tablename__ = 'call_notes'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    call_id: Mapped[int] = mapped_column(ForeignKey('calls.id'))
+    
+    text: Mapped[str] = mapped_column(Text)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    call = relationship("Call", back_populates="notes")
 
 # --- History Table (Logs) ---
 class History(Base):

@@ -1,6 +1,6 @@
 from sqlalchemy import select, and_, update, func
 from src.database.core import async_session
-from src.database.models import User, Client, Call, History
+from src.database.models import User, Client, Call, History, CallNote
 from src.database.enums import ClientStatus
 from datetime import datetime, timedelta
 import pytz
@@ -56,11 +56,23 @@ async def create_client(name: str, phone: str | None, notes: str | None) -> int:
         await session.commit()
         return client.id
     
-async def get_all_clients():
-    """Returns a list of all clients (id, name)."""
+async def get_all_clients(limit: int, offset: int):
+    """Returns a paginated list of all clients (id, name)."""
     async with async_session() as session:
-        result = await session.execute(select(Client.id, Client.name).order_by(Client.name))
+        result = await session.execute(
+            select(Client.id, Client.name)
+            .order_by(Client.name)
+            .limit(limit)
+            .offset(offset)
+        )
         return result.all()
+
+async def count_all_clients() -> int:
+    """Counts the total number of clients."""
+    async with async_session() as session:
+        result = await session.execute(select(func.count(Client.id)))
+        return result.scalar_one()
+
 
 async def search_clients_by_name(query: str):
     """Returns a list of clients matching the search query (id, name)."""
@@ -141,6 +153,16 @@ async def update_call_status(call_id: int, status: str):
             call.status = status
             await session.commit()
 
+async def add_call_note(call_id: int, text: str):
+    """Adds a note to a specific call."""
+    async with async_session() as session:
+        note = CallNote(
+            call_id=call_id,
+            text=text
+        )
+        session.add(note)
+        await session.commit()
+
 
 async def create_call(client_id: int, date_str: str, topic: str, user_timezone: str = "Europe/Moscow") -> int | None:
     """
@@ -210,6 +232,68 @@ async def mark_call_as_reminded(call_id: int):
             update(Call).where(Call.id == call_id).values(reminder_sent=True)
         )
         await session.commit()
+
+async def get_history_for_client(client_id: int, limit: int, offset: int):
+    """Returns a paginated list of history records for a specific client."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(History)
+            .where(History.client_id == client_id)
+            .order_by(History.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return result.scalars().all()
+
+async def count_history_for_client(client_id: int) -> int:
+    """Counts the total number of history records for a client."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(func.count(History.id))
+            .where(History.client_id == client_id)
+        )
+        return result.scalar_one()
+
+async def get_calls_for_today(user_tz: str):
+    """Returns calls scheduled for today in the user's timezone."""
+    async with async_session() as session:
+        try:
+            tz = pytz.timezone(user_tz)
+        except pytz.UnknownTimeZoneError:
+            tz = pytz.timezone("UTC")
+            
+        now = datetime.now(tz)
+        start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = start_of_day + timedelta(days=1)
+
+        result = await session.execute(
+            select(Call)
+            .where(
+                and_(
+                    Call.datetime >= start_of_day,
+                    Call.datetime < end_of_day,
+                    Call.status == "wait"
+                )
+            )
+            .order_by(Call.datetime)
+        )
+        return result.scalars().all()
+
+async def get_overdue_calls():
+    """Returns calls with 'wait' status that are in the past."""
+    async with async_session() as session:
+        now = datetime.now(pytz.utc)
+        result = await session.execute(
+            select(Call)
+            .where(
+                and_(
+                    Call.datetime < now,
+                    Call.status == "wait"
+                )
+            )
+            .order_by(Call.datetime.desc())
+        )
+        return result.scalars().all()
 
 # ==========================================
 # 📈 STATISTICS

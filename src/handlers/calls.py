@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
 # DB Imports
-from src.database.requests import create_call, get_client, get_user_settings, update_call_status, get_call, update_client_notes
+from src.database.requests import create_call, get_client, get_user_settings, update_call_status, get_call, add_call_note
 # Keyboard Imports
 from src.keyboards.clients_kb import get_client_card_kb
 from src.keyboards.calendar_kb import get_days_kb, get_hours_kb, get_minutes_kb
@@ -24,8 +24,8 @@ calls_router = Router()
 class AddCallState(StatesGroup):
     waiting_for_topic = State()
 
-class EditNotesState(StatesGroup):
-    waiting_for_notes = State()
+class AddCallSummaryState(StatesGroup):
+    waiting_for_summary = State()
 
 # ==========================================
 # 1. START: Select Day
@@ -106,7 +106,7 @@ async def finish_call_creation(message: Message, state: FSMContext):
         topic = t("call_no_topic", lang)
 
     # Save to DB
-    await create_call(
+    call_id = await create_call(
         client_id=data['client_id'],
         date_str=data['full_dt'],
         topic=topic,
@@ -170,7 +170,7 @@ async def call_done(callback: CallbackQuery):
     
     await callback.message.edit_text(
         t("call_follow_up", lang, client_name=client.name),
-        reply_markup=get_post_call_kb(client.id, lang)
+        reply_markup=get_post_call_kb(call_id, lang)
     )
     await callback.answer(t("call_marked_done", lang))
 
@@ -189,21 +189,26 @@ async def no_changes(callback: CallbackQuery):
     await callback.message.delete()
     await callback.answer()
 
-@calls_router.callback_query(F.data.startswith("edit_notes_"))
-async def edit_notes(callback: CallbackQuery, state: FSMContext):
+@calls_router.callback_query(F.data.startswith("add_summary_"))
+async def add_summary_start(callback: CallbackQuery, state: FSMContext):
     lang, _, _ = await get_user_settings(callback.from_user.id)
-    client_id = int(callback.data.split("_")[2])
+    call_id = int(callback.data.split("_")[2])
     
-    await state.update_data(client_id=client_id)
-    await callback.message.edit_text(t("edit_notes_prompt", lang))
-    await state.set_state(EditNotesState.waiting_for_notes)
+    call = await get_call(call_id)
+    client = await get_client(call.client_id)
+    
+    await state.update_data(call_id=call_id)
+    await callback.message.edit_text(t("add_call_summary_prompt", lang, client_name=client.name))
+    await state.set_state(AddCallSummaryState.waiting_for_summary)
     await callback.answer()
 
-@calls_router.message(EditNotesState.waiting_for_notes)
-async def process_new_notes(message: Message, state: FSMContext, bot: Bot):
+@calls_router.message(AddCallSummaryState.waiting_for_summary)
+async def add_summary_process(message: Message, state: FSMContext, bot: Bot):
     lang, _, _ = await get_user_settings(message.from_user.id)
     data = await state.get_data()
-    note_text = ""
+    call_id = data.get("call_id")
+    
+    summary_text = ""
 
     if message.voice:
         status_msg = await message.answer(t("voice_processing", lang))
@@ -217,7 +222,7 @@ async def process_new_notes(message: Message, state: FSMContext, bot: Bot):
             await bot.download_file(file.file_path, save_path)
             
             transcribed_text = await speech_to_text(save_path)
-            note_text = transcribed_text
+            summary_text = transcribed_text
             
             if os.path.exists(save_path):
                 os.remove(save_path)
@@ -225,14 +230,14 @@ async def process_new_notes(message: Message, state: FSMContext, bot: Bot):
             await status_msg.delete()
         except Exception as e:
             await status_msg.edit_text(t("voice_error", lang, error=e))
-            note_text = t("audio_error_placeholder", lang)
+            summary_text = t("audio_error_placeholder", lang)
     elif message.text:
-        note_text = message.text
+        summary_text = message.text
     else:
         await message.answer(t("send_text_or_voice", lang))
         return
 
-    await update_client_notes(data['client_id'], note_text)
+    await add_call_note(call_id, summary_text)
     
-    await message.answer(t("notes_updated", lang))
+    await message.answer(t("call_summary_added", lang))
     await state.clear()

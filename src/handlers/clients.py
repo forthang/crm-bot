@@ -7,20 +7,24 @@ from aiogram.fsm.state import State, StatesGroup
 # Import keyboards and locales
 from src.locales import t, all_t
 from src.keyboards.main_kb import get_main_keyboard, get_cancel_keyboard
-from src.keyboards.clients_kb import get_clients_list_kb, get_client_card_kb, get_status_keyboard, get_clients_list_for_call_kb, get_client_menu_kb, get_filter_by_status_kb
+from src.keyboards.clients_kb import get_clients_list_kb, get_client_card_kb, get_status_keyboard, get_clients_list_for_call_kb, get_client_menu_kb, get_filter_by_status_kb, get_client_history_kb
+from src.keyboards.pagination_kb import get_pagination_kb
 from src.services.exporter import export_clients_to_excel, export_client_to_pdf
 
 # Import database functions
 from src.database.requests import (
     create_client, 
     get_all_clients, 
+    count_all_clients,
     get_client, 
     delete_client,
     get_user_settings,
     update_client_status,
     update_client_notes,
     search_clients_by_name,
-    get_clients_by_status
+    get_clients_by_status,
+    get_history_for_client,
+    count_history_for_client
 )
 
 # Import AI service
@@ -28,6 +32,8 @@ from src.services.ai_service import speech_to_text
 
 
 client_router = Router()
+
+CLIENTS_PAGE_SIZE = 5
 
 
 # --- Define FSM states for the client form ---
@@ -160,16 +166,30 @@ async def show_clients_menu(message: Message):
     lang, _, _ = await get_user_settings(message.from_user.id)
     await message.answer(t("client_menu_title", lang), reply_markup=get_client_menu_kb(lang))
 
-@client_router.callback_query(F.data == "show_all_clients")
+@client_router.callback_query(F.data.startswith("show_all_clients"))
 async def show_all_clients_list(callback: CallbackQuery):
     lang, _, _ = await get_user_settings(callback.from_user.id)
-    clients = await get_all_clients()
     
-    if not clients:
+    parts = callback.data.split("_")
+    page = 0
+    if len(parts) > 3 and parts[3] == "page":
+        try:
+            page = int(parts[4])
+        except (ValueError, IndexError):
+            page = 0
+
+    offset = page * CLIENTS_PAGE_SIZE
+    
+    total_clients = await count_all_clients()
+    if total_clients == 0:
         await callback.answer(t("client_list_empty", lang), show_alert=True)
         return
-
-    kb = get_clients_list_kb(clients, lang)
+        
+    clients = await get_all_clients(limit=CLIENTS_PAGE_SIZE, offset=offset)
+    
+    total_pages = (total_clients + CLIENTS_PAGE_SIZE - 1) // CLIENTS_PAGE_SIZE
+    
+    kb = get_clients_list_kb(clients, page, total_pages, lang)
     await callback.message.edit_text(t("client_list_select", lang), reply_markup=kb)
     await callback.answer()
 
@@ -192,7 +212,7 @@ async def process_client_search(message: Message, state: FSMContext):
         await message.answer(t("search_no_results", lang), reply_markup=get_main_keyboard(lang))
         return
 
-    kb = get_clients_list_kb(clients, lang)
+    kb = get_clients_list_kb(clients, 0, 1, lang)
     await message.answer(t("search_results_title", lang), reply_markup=kb)
 
 @client_router.callback_query(F.data == "filter_by_status")
@@ -212,7 +232,7 @@ async def process_client_filter(callback: CallbackQuery):
         await callback.answer(t("client_list_empty", lang), show_alert=True)
         return
 
-    kb = get_clients_list_kb(clients, lang)
+    kb = get_clients_list_kb(clients, 0, 1, lang)
     await callback.message.edit_text(t("client_list_select", lang), reply_markup=kb)
     await callback.answer()
 
@@ -225,7 +245,7 @@ async def back_to_client_menu(callback: CallbackQuery):
 
 async def select_client_to_create_call(message: Message):
     lang, _, _ = await get_user_settings(message.from_user.id)
-    clients = await get_all_clients()
+    clients = await get_all_clients(limit=100, offset=0) # Get first 100 clients
     
     if not clients:
         await message.answer(t("client_list_empty", lang), reply_markup=get_main_keyboard(lang))
@@ -240,7 +260,44 @@ async def select_client_to_create_call(message: Message):
 # ==========================================
 
 
-# 1. Open client card (clicked on name)
+# 1. Open client history
+@client_router.callback_query(F.data.startswith("client_history_"))
+async def show_client_history(callback: CallbackQuery):
+    lang, tz, _ = await get_user_settings(callback.from_user.id)
+    
+    parts = callback.data.split("_")
+    client_id = int(parts[2])
+    page = int(parts[4]) if len(parts) > 4 else 0
+    
+    history_page_size = 5
+    offset = page * history_page_size
+    
+    total_history = await count_history_for_client(client_id)
+    client = await get_client(client_id)
+
+    if total_history == 0:
+        await callback.answer(t("no_history", lang), show_alert=True)
+        return
+        
+    history_records = await get_history_for_client(client_id, limit=history_page_size, offset=offset)
+    
+    total_pages = (total_history + history_page_size - 1) // history_page_size
+    
+    # Format history
+    user_tz = pytz.timezone(tz)
+    history_text = "\n\n".join([
+        f"<b>{rec.created_at.astimezone(user_tz).strftime('%Y-%m-%d %H:%M')}</b>\n- {rec.text}"
+        for rec in history_records
+    ])
+    
+    kb = get_client_history_kb(client_id, page, total_pages, lang)
+    await callback.message.edit_text(
+        f"{t('client_history_title', lang, name=client.name)}\n\n{history_text}",
+        reply_markup=kb
+    )
+    await callback.answer()
+
+# 2. Open client card (clicked on name)
 @client_router.callback_query(F.data.startswith("client_"))
 async def open_client_card(callback: CallbackQuery):
     lang, _, _ = await get_user_settings(callback.from_user.id)
@@ -271,7 +328,7 @@ async def open_client_card(callback: CallbackQuery):
     )
     await callback.answer()
 
-# 2. "Back to list" button
+# 3. "Back to list" button
 @client_router.callback_query(F.data == "back_to_list")
 async def back_to_list(callback: CallbackQuery):
     lang, _, _ = await get_user_settings(callback.from_user.id)
@@ -288,13 +345,15 @@ async def process_delete_client(callback: CallbackQuery):
     
     await callback.answer(t("client_deleted", lang))
     
-    # Refresh the "Show All" list
-    clients = await get_all_clients()
-    if not clients:
-        await callback.message.edit_text(t("client_list_empty", lang))
-    else:
-        kb = get_clients_list_kb(clients, lang)
-        await callback.message.edit_text(t("client_list_select", lang), reply_markup=kb)
+    # Refresh the "Show All" list by calling the handler again
+    new_callback = CallbackQuery(
+        id=callback.id,
+        from_user=callback.from_user,
+        chat_instance=callback.chat_instance,
+        message=callback.message,
+        data="show_all_clients"
+    )
+    await show_all_clients_list(new_callback)
 
 
 @client_router.callback_query(F.data == "export_all_excel")

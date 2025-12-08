@@ -7,7 +7,7 @@ from aiogram.fsm.state import State, StatesGroup
 # Import settings for password checking
 from src.config import config
 # Import database functions
-from src.database.requests import get_user, add_user, get_user_settings
+from src.database.requests import get_user, add_user, get_user_settings, get_calls_for_today, get_overdue_calls, get_client
 # Import keyboards and locales
 from src.keyboards.main_kb import get_main_keyboard
 from src.locales import t
@@ -27,9 +27,35 @@ async def cmd_start(message: Message, state: FSMContext):
     
     if user:
         # If the user exists, get their language and show the menu
-        lang, _, _ = await get_user_settings(user.telegram_id)
+        lang, tz, _ = await get_user_settings(user.telegram_id)
+        
+        # --- Daily Summary ---
+        summary_parts = []
+        
+        # Get overdue calls
+        overdue_calls = await get_overdue_calls()
+        if overdue_calls:
+            summary_parts.append(f"<b>{t('overdue_calls_title', lang)}</b>")
+            for call in overdue_calls:
+                client = await get_client(call.client_id)
+                summary_parts.append(f" - {client.name} ({call.datetime.strftime('%d.%m %H:%M')})")
+        
+        # Get today's calls
+        todays_calls = await get_calls_for_today(tz)
+        if todays_calls:
+            summary_parts.append(f"\n<b>{t('todays_calls_title', lang)}</b>")
+            for call in todays_calls:
+                client = await get_client(call.client_id)
+                summary_parts.append(f" - {client.name} ({call.datetime.strftime('%H:%M')})")
+
+        # --- Welcome Message ---
+        welcome_text = t("welcome_back", lang, name=user.full_name)
+        if summary_parts:
+            summary_text = "\n".join(summary_parts)
+            welcome_text += f"\n\n{t('daily_summary_title', lang)}\n{summary_text}"
+
         await message.answer(
-            t("welcome_back", lang, name=user.full_name),
+            welcome_text,
             reply_markup=get_main_keyboard(lang)
         )
         return
