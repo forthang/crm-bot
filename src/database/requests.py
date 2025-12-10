@@ -34,6 +34,12 @@ async def get_user_settings(telegram_id: int):
             return user.language, user.timezone, user.reminder_delay
         return "en", "Europe/Moscow", 10 # Default
 
+async def get_all_users():
+    """Returns all users from the database."""
+    async with async_session() as session:
+        result = await session.execute(select(User))
+        return result.scalars().all()
+
 async def update_user_settings(telegram_id: int, lang=None, tz=None, delay=None):
     """Updates user settings for language, timezone, and reminder delay."""
     async with async_session() as session:

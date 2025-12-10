@@ -59,8 +59,12 @@ async def global_voice_handler(message: Message, state: FSMContext, bot: Bot):
     file_path = f"media/{file_id}.ogg"
     await bot.download_file(file.file_path, file_path)
     
-    openai_langs = {"en": "en", "fr": "fr"}
-    lang_code = openai_langs.get(lang, "en")
+    # More flexible language detection for STT
+    if lang.startswith("fr"):
+        lang_code = "fr"
+    else:
+        lang_code = "en"
+    
     text = await speech_to_text(file_path, language=lang_code)
     
     await status_msg.edit_text(t("ai_thinking", lang, text=text))
